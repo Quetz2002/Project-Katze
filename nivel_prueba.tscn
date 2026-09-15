@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://b6re5mbaf4742"]
+
+[ext_resource type="PackedScene" uid="uid://chmpbew8ctums" path="res://bianca.tscn" id="1_wamir"]
+
+[sub_resource type="Environment" id="Environment_u11fl"]
+background_mode = 2
+
+[node name="Nivel_Prueba" type="Node3D" unique_id=1759473369]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1301155737]
+use_collision = true
+size = Vector3(20, 0.5, 20)
+
+[node name="Bianca" parent="." unique_id=48665339 instance=ExtResource("1_wamir")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4739642, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=40345161]
+transform = Transform3D(-0.7277964, -0.32231396, 0.6053314, 0, 0.8826733, 0.46998703, -0.6857933, 0.34205487, -0.64240646, -2.9356318, 2.9840221, 3.404193)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1352963270]
+environment = SubResource("Environment_u11fl")

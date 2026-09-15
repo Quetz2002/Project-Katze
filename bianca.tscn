@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://chmpbew8ctums"]
+
+[ext_resource type="Script" uid="uid://bw3hg6l0e0vre" path="res://bianca.gd" id="1_d8rcv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wamir"]
+diffuse_mode = 3
+specular_mode = 2
+albedo_color = Color(1, 0.64705884, 0, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_u11fl"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_u11fl"]
+
+[node name="Bianca" type="CharacterBody3D" unique_id=48665339]
+script = ExtResource("1_d8rcv")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1309506923]
+material_override = SubResource("StandardMaterial3D_wamir")
+mesh = SubResource("CapsuleMesh_u11fl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1188524125]
+shape = SubResource("CapsuleShape3D_u11fl")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1418014768]
+transform = Transform3D(1, 0, 0, 0, 0.9383844, 0.34559342, 0, -0.34559342, 0.9383844, 0, 1.1604556, 1.7739564)
