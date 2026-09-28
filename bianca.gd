@@ -1,23 +1,72 @@
 extends CharacterBody3D
 
+# --- NODOS ---
+@onready var cam_root = $CamRoot
+@onready var spring_arm = $CamRoot/SpringArm3D
+@onready var camera = $CamRoot/SpringArm3D/Camera3D
+@onready var reticle = $UI/CenterContainer
+@onready var raycast = $CamRoot/SpringArm3D/Camera3D/RayCast3D
+@onready var melee_hitbox = $MeleeHitbox # Nodo para el golpe cuerpo a cuerpo
 
-const SPEED = 5.0
+# --- ESTADOS DE ARMAS ---
+enum Weapon { RANGED, MELEE }
+var current_weapon = Weapon.RANGED
+
+# --- CÁMARA Y APUNTADO ---
+const NORMAL_CAM_LENGTH = 3.0
+const AIM_CAM_LENGTH = 1.2
+const NORMAL_H_OFFSET = 0.0 # Posición centrada normal
+const AIM_H_OFFSET = 1.0    # Cuánto se mueve a la derecha al apuntar
+var is_aiming = false
+var mouse_sensitivity = 0.003
+
+# --- MOVIMIENTO ---
 const JUMP_VELOCITY = 4.5
+var SPEED = 5.0 
+const WALK_SPEED = 5.0
+const DASH_SPEED = 15.0
+var dash_timer = 0.0
 
+
+func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	reticle.hide()
+
+func _unhandled_input(event):
+	if event is InputEventMouseMotion:
+		# Calculamos la sensibilidad: si apunta, es más lenta
+		var current_sensitivity = mouse_sensitivity * 0.4 if is_aiming else mouse_sensitivity
+		
+		# Gira a los lados (eje Y)
+		cam_root.rotate_y(-event.relative.x * current_sensitivity)
+		# Gira arriba/abajo (eje X)
+		cam_root.rotation.x -= event.relative.y * current_sensitivity
+		# Limita para que la cámara no dé vueltas completas sobre sí misma
+		cam_root.rotation.x = clamp(cam_root.rotation.x, deg_to_rad(-70), deg_to_rad(70))
 
 func _physics_process(delta: float) -> void:
-	# Add the gravity.
+	# Gravedad
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
-	# Handle jump.
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
+	# Lógica para esquivar (Dash)
+	if dash_timer > 0:
+		dash_timer -= delta
+		SPEED = DASH_SPEED
+	else:
+		SPEED = WALK_SPEED
 
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
-	var input_dir := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	if Input.is_action_just_pressed("ui_accept") and is_on_floor() and dash_timer <= 0:
+		dash_timer = 0.25 # El impulso dura un cuarto de segundo
+
+	# Movimiento base
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var direction = (cam_root.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
+	# Para que no flote ni se entierre al mirar arriba/abajo:
+	direction.y = 0 
+	direction = direction.normalized()
+	
 	if direction:
 		velocity.x = direction.x * SPEED
 		velocity.z = direction.z * SPEED
@@ -25,4 +74,63 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
+	# --- CAMBIO DE ARMAS ---
+	if Input.is_action_just_pressed("switch_weapon"):
+		if current_weapon == Weapon.RANGED:
+			current_weapon = Weapon.MELEE
+			is_aiming = false # Cancela el apuntado al cambiar a melee
+			reticle.hide()
+			print("Arma equipada: Cuerpo a Cuerpo ⚔️")
+		else:
+			current_weapon = Weapon.RANGED
+			print("Arma equipada: Fuego a Distancia 🔫")
+
+	# --- LÓGICA DE ARMA A DISTANCIA ---
+	if current_weapon == Weapon.RANGED:
+		# Detectar apuntado
+		if Input.is_action_pressed("aim"):
+			is_aiming = true
+			reticle.show()
+			SPEED = WALK_SPEED * 0.6 # Camina más lento al apuntar
+		else:
+			is_aiming = false
+			reticle.hide()
+			
+		# Disparar
+		if Input.is_action_just_pressed("shoot") and is_aiming:
+			if raycast.is_colliding():
+				var objetivo = raycast.get_collider()
+				print("¡Pum! Le diste a: ", objetivo.name)
+			else:
+				print("¡Pum! Disparo al aire...")
+
+	# --- LÓGICA DE ARMA CUERPO A CUERPO ---
+	elif current_weapon == Weapon.MELEE:
+		is_aiming = false # Evita que la cámara haga zoom
+		reticle.hide()    # Oculta la mira por seguridad
+		
+		# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
+		if Input.is_action_just_pressed("shoot"):
+			_ejecutar_golpe_melee("GOLPE LIGERO")
+			
+		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
+		if Input.is_action_just_pressed("aim"):
+			_ejecutar_golpe_melee("GOLPE PESADO")
+
+	# Movimiento suave de la cámara (Zoom y Desplazamiento lateral)
+	var target_cam_length = AIM_CAM_LENGTH if is_aiming else NORMAL_CAM_LENGTH
+	var target_h_offset = AIM_H_OFFSET if is_aiming else NORMAL_H_OFFSET
+	
+	# Acercamos la cámara acortando el brazo
+	spring_arm.spring_length = lerp(spring_arm.spring_length, target_cam_length, delta * 12.0)
+	# Movemos la base del brazo hacia la derecha
+	spring_arm.position.x = lerp(spring_arm.position.x, target_h_offset, delta * 12.0)
+
 	move_and_slide()
+func _ejecutar_golpe_melee(tipo_golpe: String):
+	print("¡Bianca lanza un ", tipo_golpe, "!")
+	var cuerpos_golpeados = melee_hitbox.get_overlapping_bodies()
+	
+	for cuerpo in cuerpos_golpeados:
+		if cuerpo != self:
+			print("¡Impacto de ", tipo_golpe, " a: ", cuerpo.name, "!")

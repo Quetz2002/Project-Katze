@@ -11,6 +11,8 @@ albedo_color = Color(1, 0.64705884, 0, 1)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_u11fl"]
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_u11fl"]
+
 [node name="Bianca" type="CharacterBody3D" unique_id=48665339]
 script = ExtResource("1_d8rcv")
 
@@ -21,5 +23,34 @@ mesh = SubResource("CapsuleMesh_u11fl")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1188524125]
 shape = SubResource("CapsuleShape3D_u11fl")
 
-[node name="Camera3D" type="Camera3D" parent="." unique_id=1418014768]
-transform = Transform3D(1, 0, 0, 0, 0.9383844, 0.34559342, 0, -0.34559342, 0.9383844, 0, 1.1604556, 1.7739564)
+[node name="CamRoot" type="Node3D" parent="." unique_id=1224910169]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CamRoot" unique_id=522012416]
+spring_length = 3.0
+margin = 0.5
+
+[node name="Camera3D" type="Camera3D" parent="CamRoot/SpringArm3D" unique_id=1418014768]
+
+[node name="RayCast3D" type="RayCast3D" parent="CamRoot/SpringArm3D/Camera3D" unique_id=829973036]
+target_position = Vector3(0, 0, -50)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=170967968]
+
+[node name="CenterContainer" type="CenterContainer" parent="UI" unique_id=572442657]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="UI/CenterContainer" unique_id=1051937350]
+custom_minimum_size = Vector2(4, 4)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MeleeHitbox" type="Area3D" parent="." unique_id=1107020420]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeHitbox" unique_id=2003638918]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.72350705)
+shape = SubResource("BoxShape3D_u11fl")
