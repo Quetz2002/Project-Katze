@@ -7,6 +7,17 @@ extends CharacterBody3D
 @onready var reticle = $UI/CenterContainer
 @onready var raycast = $CamRoot/SpringArm3D/Camera3D/RayCast3D
 @onready var melee_hitbox = $MeleeHitbox # Nodo para el golpe cuerpo a cuerpo
+@onready var health_bar = $UI/HealthBar
+@onready var stamina_bar = $UI/StaminaBar
+
+# --- ESTADISTICAS ---
+var max_health = 100.0
+var current_health = max_health
+var max_stamina = 100.0
+var current_stamina = max_stamina
+var stamina_regen = 15.0 #Cuanta stamina recupera por segundo
+var dash_cost = 25.0
+var heavy_attack_cost = 35.0
 
 # --- ESTADOS DE ARMAS ---
 enum Weapon { RANGED, MELEE }
@@ -49,6 +60,15 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity += get_gravity() * delta
 
+	# Regenerar stamina
+	if current_stamina < max_stamina:
+		current_stamina += stamina_regen * delta
+		current_stamina = clamp(current_stamina, 0.0, max_stamina)
+		
+	# Actualizar UI
+	stamina_bar.value = current_stamina
+	health_bar.value = current_health
+	
 	# Lógica para esquivar (Dash)
 	if dash_timer > 0:
 		dash_timer -= delta
@@ -56,8 +76,9 @@ func _physics_process(delta: float) -> void:
 	else:
 		SPEED = WALK_SPEED
 
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor() and dash_timer <= 0:
+	if Input.is_action_just_pressed("ui_accept") and is_on_floor() and dash_timer <= 0 and current_stamina >= dash_cost:
 		dash_timer = 0.25 # El impulso dura un cuarto de segundo
+		current_stamina -= dash_cost
 
 	# Movimiento base
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -115,7 +136,11 @@ func _physics_process(delta: float) -> void:
 			
 		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
 		if Input.is_action_just_pressed("aim"):
-			_ejecutar_golpe_melee("GOLPE PESADO")
+			if current_stamina >= heavy_attack_cost:
+				current_stamina -= heavy_attack_cost
+				_ejecutar_golpe_melee("GOLPE PESADO")
+			else:
+				print("No hay suficiente estamina")
 
 	# Movimiento suave de la cámara (Zoom y Desplazamiento lateral)
 	var target_cam_length = AIM_CAM_LENGTH if is_aiming else NORMAL_CAM_LENGTH
