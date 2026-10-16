@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b6re5mbaf4742"]
 
 [ext_resource type="PackedScene" uid="uid://chmpbew8ctums" path="res://bianca.tscn" id="1_wamir"]
+[ext_resource type="PackedScene" uid="uid://djepru13dkw86" path="res://mutante.tscn" id="2_dyfjs"]
 
 [sub_resource type="Environment" id="Environment_u11fl"]
 background_mode = 2
@@ -20,3 +21,6 @@ shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1352963270]
 environment = SubResource("Environment_u11fl")
+
+[node name="Mutante" parent="." unique_id=793058878 instance=ExtResource("2_dyfjs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 3)

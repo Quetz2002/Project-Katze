@@ -122,6 +122,10 @@ func _physics_process(delta: float) -> void:
 			if raycast.is_colliding():
 				var objetivo = raycast.get_collider()
 				print("¡Pum! Le diste a: ", objetivo.name)
+				
+				#Verificamos si le dio al enemigo
+				if objetivo.has_method("get_damage"):
+					objetivo.get_damage(25) #el disparo bajara 25 de vida
 			else:
 				print("¡Pum! Disparo al aire...")
 
@@ -156,6 +160,11 @@ func _ejecutar_golpe_melee(tipo_golpe: String):
 	print("¡Bianca lanza un ", tipo_golpe, "!")
 	var cuerpos_golpeados = melee_hitbox.get_overlapping_bodies()
 	
+	#Definimos el daño (15 para el ligero y 35 para el pesado)
+	var damage = 15 if tipo_golpe == "GOLPE LIGERO" else 35
+	
 	for cuerpo in cuerpos_golpeados:
 		if cuerpo != self:
 			print("¡Impacto de ", tipo_golpe, " a: ", cuerpo.name, "!")
+			if cuerpo.has_method("get_damage"):
+				cuerpo.get_damage(damage)
