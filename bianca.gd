@@ -9,6 +9,13 @@ extends CharacterBody3D
 @onready var melee_hitbox = $MeleeHitbox # Nodo para el golpe cuerpo a cuerpo
 @onready var health_bar = $UI/HealthBar
 @onready var stamina_bar = $UI/StaminaBar
+@onready var inventory_panel = $UI/InventoryPanel
+@onready var inventario_label = $UI/InventoryPanel/Label
+
+# --- DATOS DE INVENTARIO ---
+var inventario_abierto = false
+var memorias_recuperadas = 0
+var objetos_curativos = 3
 
 # --- ESTADISTICAS ---
 var max_health = 100.0
@@ -44,7 +51,7 @@ func _ready():
 	reticle.hide()
 
 func _unhandled_input(event):
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and not inventario_abierto:
 		# Calculamos la sensibilidad: si apunta, es más lenta
 		var current_sensitivity = mouse_sensitivity * 0.4 if is_aiming else mouse_sensitivity
 		
@@ -56,6 +63,13 @@ func _unhandled_input(event):
 		cam_root.rotation.x = clamp(cam_root.rotation.x, deg_to_rad(-70), deg_to_rad(70))
 
 func _physics_process(delta: float) -> void:
+	#abrir inventario
+	if Input.is_action_just_pressed("open_inventory"):
+		_manejar_inventario()
+	#Si el inventario esta abierto bloqueamos los movimientos del personaje
+	if inventario_abierto:
+		return
+	
 	# Gravedad
 	if not is_on_floor():
 		velocity += get_gravity() * delta
@@ -168,3 +182,23 @@ func _ejecutar_golpe_melee(tipo_golpe: String):
 			print("¡Impacto de ", tipo_golpe, " a: ", cuerpo.name, "!")
 			if cuerpo.has_method("get_damage"):
 				cuerpo.get_damage(damage)
+func recibir_dano(cantidad: float):
+	current_health -= cantidad
+	current_health = clamp(current_health, 0, max_health)
+	health_bar.value = current_health
+	print("¡Bianca recibió daño! Salud actual: ", current_health)
+	
+	if current_health <= 0:
+		print("¡Bianca ha caído!")
+
+func _manejar_inventario():
+	inventario_abierto = !inventario_abierto
+	if inventario_abierto:
+		inventory_panel.show()
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE) #Se libera el cursor
+		get_tree().paused = true #Se pausa todo el juego
+		inventario_label.text = "INVENTARIO - Memorias: " + str(memorias_recuperadas) + " | Curas: " + str(objetos_curativos)
+	else:
+		inventory_panel.hide()
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) #Se captura el mouse nuevamente
+		get_tree().paused = false #Se reanuda el juego
