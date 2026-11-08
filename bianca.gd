@@ -202,3 +202,23 @@ func _manejar_inventario():
 		inventory_panel.hide()
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) #Se captura el mouse nuevamente
 		get_tree().paused = false #Se reanuda el juego
+
+
+func _on_btn_cura_pressed() -> void:
+	# Verificamos si tenemos curas y si Bianca no tiene ya la vida al máximo
+	if objetos_curativos > 0 and current_health < max_health:
+		objetos_curativos -= 1
+		current_health += 40.0 # Cada cura restaura 40 puntos de vida
+		current_health = clamp(current_health, 0.0, max_health)
+		
+		# Actualizamos la barra roja de la interfaz
+		health_bar.value = current_health
+		
+		# Actualizamos el texto del inventario
+		inventario_label.text = "INVENTARIO - Memorias: " + str(memorias_recuperadas) + " | Curas: " + str(objetos_curativos)
+		print("¡Bianca usó una cura! Salud actual: ", current_health)
+		
+	elif current_health >= max_health:
+		print("¡La salud ya está al máximo, no desperdicies curas!")
+	else:
+		print("¡El inventario de curas está vacío!")

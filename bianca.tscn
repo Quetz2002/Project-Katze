@@ -123,6 +123,11 @@ offset_right = 40.0
 offset_bottom = 40.0
 columns = 4
 
+[node name="BtnCura" type="Button" parent="UI/InventoryPanel/GridContainer" unique_id=1173074084]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+text = "Usar Cura"
+
 [node name="MeleeHitbox" type="Area3D" parent="." unique_id=1107020420]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0.6056571)
 collision_layer = 0
@@ -131,3 +136,5 @@ collision_mask = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="MeleeHitbox" unique_id=2003638918]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.26895195)
 shape = SubResource("BoxShape3D_u11fl")
+
+[connection signal="pressed" from="UI/InventoryPanel/GridContainer/BtnCura" to="." method="_on_btn_cura_pressed"]
