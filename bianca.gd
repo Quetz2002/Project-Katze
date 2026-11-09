@@ -10,7 +10,7 @@ extends CharacterBody3D
 @onready var health_bar = $UI/HealthBar
 @onready var stamina_bar = $UI/StaminaBar
 @onready var inventory_panel = $UI/InventoryPanel
-@onready var inventario_label = $UI/InventoryPanel/Label
+@onready var inventario_label = $UI/InventoryPanel/HBoxContainer/VBoxContainer/Label
 
 # --- DATOS DE INVENTARIO ---
 var inventario_abierto = false
@@ -68,7 +68,9 @@ func _physics_process(delta: float) -> void:
 		_manejar_inventario()
 	#Si el inventario esta abierto bloqueamos los movimientos del personaje
 	if inventario_abierto:
-		return
+		SPEED = WALK_SPEED * 0.4
+		is_aiming = false
+		#Nota: No usamos 'return'para que el movimiento de abajo se siga ejecutando
 	
 	# Gravedad
 	if not is_on_floor():
@@ -123,42 +125,43 @@ func _physics_process(delta: float) -> void:
 	# --- LÓGICA DE ARMA A DISTANCIA ---
 	if current_weapon == Weapon.RANGED:
 		# Detectar apuntado
-		if Input.is_action_pressed("aim"):
-			is_aiming = true
-			reticle.show()
-			SPEED = WALK_SPEED * 0.6 # Camina más lento al apuntar
-		else:
-			is_aiming = false
-			reticle.hide()
-			
-		# Disparar
-		if Input.is_action_just_pressed("shoot") and is_aiming:
-			if raycast.is_colliding():
-				var objetivo = raycast.get_collider()
-				print("¡Pum! Le diste a: ", objetivo.name)
+		if not inventario_abierto:
+			if Input.is_action_pressed("aim"):
+				is_aiming = true
+				reticle.show()
+				SPEED = WALK_SPEED * 0.6 # Camina más lento al apuntar
+			else:
+				is_aiming = false
+				reticle.hide()
 				
-				#Verificamos si le dio al enemigo
-				if objetivo.has_method("get_damage"):
-					objetivo.get_damage(25) #el disparo bajara 25 de vida
-			else:
-				print("¡Pum! Disparo al aire...")
+			# Disparar
+			if Input.is_action_just_pressed("shoot") and is_aiming:
+				if raycast.is_colliding():
+					var objetivo = raycast.get_collider()
+					print("¡Pum! Le diste a: ", objetivo.name)
+					
+					#Verificamos si le dio al enemigo
+					if objetivo.has_method("get_damage"):
+						objetivo.get_damage(25) #el disparo bajara 25 de vida
+				else:
+					print("¡Pum! Disparo al aire...")
 
-	# --- LÓGICA DE ARMA CUERPO A CUERPO ---
-	elif current_weapon == Weapon.MELEE:
-		is_aiming = false # Evita que la cámara haga zoom
-		reticle.hide()    # Oculta la mira por seguridad
-		
-		# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
-		if Input.is_action_just_pressed("shoot"):
-			_ejecutar_golpe_melee("GOLPE LIGERO")
+		# --- LÓGICA DE ARMA CUERPO A CUERPO ---
+		elif current_weapon == Weapon.MELEE:
+			is_aiming = false # Evita que la cámara haga zoom
+			reticle.hide()    # Oculta la mira por seguridad
 			
-		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
-		if Input.is_action_just_pressed("aim"):
-			if current_stamina >= heavy_attack_cost:
-				current_stamina -= heavy_attack_cost
-				_ejecutar_golpe_melee("GOLPE PESADO")
-			else:
-				print("No hay suficiente estamina")
+			# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
+			if Input.is_action_just_pressed("shoot"):
+				_ejecutar_golpe_melee("GOLPE LIGERO")
+				
+			# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
+			if Input.is_action_just_pressed("aim"):
+				if current_stamina >= heavy_attack_cost:
+					current_stamina -= heavy_attack_cost
+					_ejecutar_golpe_melee("GOLPE PESADO")
+				else:
+					print("No hay suficiente estamina")
 
 	# Movimiento suave de la cámara (Zoom y Desplazamiento lateral)
 	var target_cam_length = AIM_CAM_LENGTH if is_aiming else NORMAL_CAM_LENGTH
@@ -196,12 +199,12 @@ func _manejar_inventario():
 	if inventario_abierto:
 		inventory_panel.show()
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE) #Se libera el cursor
-		get_tree().paused = true #Se pausa todo el juego
+		#get_tree().paused = true #Se pausa todo el juego
 		inventario_label.text = "INVENTARIO - Memorias: " + str(memorias_recuperadas) + " | Curas: " + str(objetos_curativos)
 	else:
 		inventory_panel.hide()
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) #Se captura el mouse nuevamente
-		get_tree().paused = false #Se reanuda el juego
+		#get_tree().paused = false #Se reanuda el juego
 
 
 func _on_btn_cura_pressed() -> void:

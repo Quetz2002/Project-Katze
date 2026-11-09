@@ -22,6 +22,8 @@ bg_color = Color(1, 1, 1, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u11fl"]
 bg_color = Color(0, 0, 0, 0.59607846)
 
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_5s3r6"]
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_u11fl"]
 
 [node name="Bianca" type="CharacterBody3D" unique_id=48665339 groups=["Jugador"]]
@@ -104,26 +106,45 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_u11fl")
 
-[node name="Label" type="Label" parent="UI/InventoryPanel" unique_id=1205033472]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/InventoryPanel" unique_id=629812004]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -134.0
-offset_right = 134.0
-offset_bottom = 23.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
-text = "Inventario - Memorias: 0 | Curas: 3"
-horizontal_alignment = 1
-vertical_alignment = 1
+grow_vertical = 2
 
-[node name="GridContainer" type="GridContainer" parent="UI/InventoryPanel" unique_id=315739419]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/InventoryPanel/HBoxContainer" unique_id=1052555820]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer" unique_id=1712227494]
+layout_mode = 2
+text = "INVENTARIO - Memorias: 0 | Curas: 3 "
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="UI/InventoryPanel/HBoxContainer" unique_id=278369314]
+layout_mode = 2
+size_flags_stretch_ratio = 2.0
+
+[node name="SubViewport" type="SubViewport" parent="UI/InventoryPanel/HBoxContainer/SubViewportContainer" unique_id=511246705]
+own_world_3d = true
+handle_input_locally = false
+render_target_update_mode = 0
+
+[node name="Camera3D" type="Camera3D" parent="UI/InventoryPanel/HBoxContainer/SubViewportContainer/SubViewport" unique_id=672604957]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="UI/InventoryPanel/HBoxContainer/SubViewportContainer/SubViewport" unique_id=29125367]
+mesh = SubResource("CapsuleMesh_5s3r6")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="UI/InventoryPanel/HBoxContainer/SubViewportContainer/SubViewport" unique_id=35818859]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 0, 0)
+
+[node name="GridContainer" type="GridContainer" parent="UI/InventoryPanel/HBoxContainer" unique_id=820966490]
+layout_mode = 2
+size_flags_horizontal = 3
 columns = 4
 
-[node name="BtnCura" type="Button" parent="UI/InventoryPanel/GridContainer" unique_id=1173074084]
+[node name="BtnCura" type="Button" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1697449899]
 custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
 text = "Usar Cura"
@@ -137,4 +158,4 @@ collision_mask = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.26895195)
 shape = SubResource("BoxShape3D_u11fl")
 
-[connection signal="pressed" from="UI/InventoryPanel/GridContainer/BtnCura" to="." method="_on_btn_cura_pressed"]
+[connection signal="pressed" from="UI/InventoryPanel/HBoxContainer/GridContainer/BtnCura" to="." method="_on_btn_cura_pressed"]
