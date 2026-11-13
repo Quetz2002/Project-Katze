@@ -180,22 +180,22 @@ func _physics_process(delta: float) -> void:
 				else:
 					print("¡Pum! Disparo al aire...")
 
-		# --- LÓGICA DE ARMA CUERPO A CUERPO ---
-		elif current_weapon == Weapon.MELEE:
-			is_aiming = false # Evita que la cámara haga zoom
-			reticle.hide()    # Oculta la mira por seguridad
-			
-			# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
-			if Input.is_action_just_pressed("shoot"):
-				_ejecutar_golpe_melee("GOLPE LIGERO")
+	# --- LÓGICA DE ARMA CUERPO A CUERPO ---
+	elif current_weapon == Weapon.MELEE:
+		is_aiming = false # Evita que la cámara haga zoom
+		reticle.hide()    # Oculta la mira por seguridad
+		
+		# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
+		if Input.is_action_just_pressed("shoot"):
+			_ejecutar_golpe_melee("GOLPE LIGERO")
 				
-			# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
-			if Input.is_action_just_pressed("aim"):
-				if current_stamina >= heavy_attack_cost:
-					current_stamina -= heavy_attack_cost
-					_ejecutar_golpe_melee("GOLPE PESADO")
-				else:
-					print("No hay suficiente estamina")
+		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
+		if Input.is_action_just_pressed("aim"):
+			if current_stamina >= heavy_attack_cost:
+				current_stamina -= heavy_attack_cost
+				_ejecutar_golpe_melee("GOLPE PESADO")
+			else:
+				print("No hay suficiente estamina")
 
 	# Movimiento suave de la cámara (Zoom y Desplazamiento lateral)
 	var target_cam_length = AIM_CAM_LENGTH if is_aiming else NORMAL_CAM_LENGTH

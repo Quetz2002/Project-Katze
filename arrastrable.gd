@@ -26,8 +26,8 @@ func _get_drag_data(at_position: Vector2) -> Variant:
 #Funcion para leer clics directamente desde el recuadro
 func _gui_input(event:InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
-		#Detectamos el clic derecho O d-pad DOWN
-		if event.button_index == MOUSE_BUTTON_RIGHT || event.button_index == JOY_BUTTON_DPAD_DOWN:
+		#Detectamos la F O d-pad DOWN
+		if event.button_index == KEY_F || event.button_index == JOY_BUTTON_DPAD_DOWN:
 			if id_objeto == "cura":
 				#Emitimos la señal de que el jugador quiere usar una cura
 				objeto_consumido.emit(id_objeto)
