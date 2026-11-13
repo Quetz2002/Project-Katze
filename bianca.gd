@@ -156,8 +156,12 @@ func _physics_process(delta: float) -> void:
 			current_weapon = Weapon.RANGED
 			print("Arma equipada: Fuego a Distancia 🔫")
 
-	# --- LÓGICA DE ARMA A DISTANCIA ---
-	if current_weapon == Weapon.RANGED:
+	# --- LÓGICA DE ARMAS ---
+	# Con el inventario abierto no se puede atacar ni disparar.
+	if inventario_abierto:
+		is_aiming = false
+		reticle.hide()
+	elif current_weapon == Weapon.RANGED:
 		# Detectar apuntado
 		if not inventario_abierto:
 			if Input.is_action_pressed("aim"):
@@ -189,6 +193,7 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("shoot"):
 			_ejecutar_golpe_melee("GOLPE LIGERO")
 				
+
 		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
 		if Input.is_action_just_pressed("aim"):
 			if current_stamina >= heavy_attack_cost:
