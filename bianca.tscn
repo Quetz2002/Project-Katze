@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://chmpbew8ctums"]
 
 [ext_resource type="Script" uid="uid://bw3hg6l0e0vre" path="res://bianca.gd" id="1_d8rcv"]
+[ext_resource type="Script" uid="uid://btsva6aqpusuv" path="res://arrastrable.gd" id="2_510ro"]
+[ext_resource type="Script" uid="uid://b7445hsnx676c" path="res://ranura_destino.gd" id="2_ehs2g"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wamir"]
 diffuse_mode = 3
@@ -121,6 +123,22 @@ layout_mode = 2
 layout_mode = 2
 text = "INVENTARIO - Memorias: 0 | Curas: 3 "
 
+[node name="QuickSlots" type="HBoxContainer" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer" unique_id=2107356022]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="QuickSlot1" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots" unique_id=562465554]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+color = Color(1, 1, 1, 0.35686275)
+script = ExtResource("2_ehs2g")
+
+[node name="QuickSlot2" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots" unique_id=916275102]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+color = Color(1, 1, 1, 0.4745098)
+script = ExtResource("2_ehs2g")
+
 [node name="SubViewportContainer" type="SubViewportContainer" parent="UI/InventoryPanel/HBoxContainer" unique_id=278369314]
 layout_mode = 2
 size_flags_stretch_ratio = 2.0
@@ -144,10 +162,18 @@ layout_mode = 2
 size_flags_horizontal = 3
 columns = 4
 
-[node name="BtnCura" type="Button" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1697449899]
-custom_minimum_size = Vector2(120, 120)
+[node name="SlotCura" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1982708782]
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-text = "Usar Cura"
+color = Color(0, 1, 0, 1)
+script = ExtResource("2_510ro")
+id_objeto = "cura"
+
+[node name="SlotPistola" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1199739737]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+color = Color(1, 0, 0, 1)
+script = ExtResource("2_510ro")
 
 [node name="MeleeHitbox" type="Area3D" parent="." unique_id=1107020420]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0.6056571)
@@ -158,4 +184,4 @@ collision_mask = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.26895195)
 shape = SubResource("BoxShape3D_u11fl")
 
-[connection signal="pressed" from="UI/InventoryPanel/HBoxContainer/GridContainer/BtnCura" to="." method="_on_btn_cura_pressed"]
+[connection signal="gui_input" from="UI/InventoryPanel/HBoxContainer/SubViewportContainer" to="." method="_on_sub_viewport_container_gui_input"]

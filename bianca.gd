@@ -12,10 +12,17 @@ extends CharacterBody3D
 @onready var inventory_panel = $UI/InventoryPanel
 @onready var inventario_label = $UI/InventoryPanel/HBoxContainer/VBoxContainer/Label
 
+
 # --- DATOS DE INVENTARIO ---
 var inventario_abierto = false
 var memorias_recuperadas = 0
 var objetos_curativos = 3
+
+# --- INVENTARIO V3: ROTACION DEL MODELO 3D ---
+var is_rotating_model = false
+var model_rotation_speed = 0.01
+@onready var capsule_model = $UI/InventoryPanel/HBoxContainer/SubViewportContainer/SubViewport/MeshInstance3D
+
 
 # --- ESTADISTICAS ---
 var max_health = 100.0
@@ -49,6 +56,19 @@ var dash_timer = 0.0
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	reticle.hide()
+	
+	# --- CONECTAR SEÑALES DEL INVENTARIO ---
+	var slot_1 = $UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot1
+	var slot_2 = $UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot2
+	
+	# Conectamos la señal 'arma_asignada' a la función '_on_arma_asignada'
+	slot_1.arma_asignada.connect(_on_arma_asignada)
+	slot_2.arma_asignada.connect(_on_arma_asignada)
+	
+	#Conectamos las señales de la mochila
+	#La ruta debe apuntar correctamente al cuadro de la mochila (el verde)
+	var slot_cura = $UI/InventoryPanel/HBoxContainer/GridContainer/SlotCura
+	slot_cura.objeto_consumido.connect(_on_objeto_consumido)
 
 func _unhandled_input(event):
 	if event is InputEventMouseMotion and not inventario_abierto:
@@ -70,6 +90,20 @@ func _physics_process(delta: float) -> void:
 	if inventario_abierto:
 		SPEED = WALK_SPEED * 0.4
 		is_aiming = false
+		
+		# --- Rotacion de la capsula con el mando usando el stick derecho
+		# Leyendo directamente el stick del dispositivo 0
+		var joy_x = Input.get_joy_axis(0, JOY_AXIS_RIGHT_X)
+		var joy_y = Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+		
+		var rotacion_mando = Vector2(joy_x, joy_y)
+		
+		#Aplicamos una zona muerta de 0.2 para que no gire solo si el stick funciona mal
+		if rotacion_mando.length() > 0.2:
+			#Multiplicamos por 50 para compensar la diferencia de sensibilidad con respecto al mouse
+			capsule_model.rotate_y(-rotacion_mando.x * model_rotation_speed * 50.0)
+			capsule_model.rotation.x -= rotacion_mando.y * model_rotation_speed * 50.0
+			capsule_model.rotation.x = clamp(capsule_model.rotation.x, deg_to_rad(-25), deg_to_rad(25))
 		#Nota: No usamos 'return'para que el movimiento de abajo se siga ejecutando
 	
 	# Gravedad
@@ -225,3 +259,47 @@ func _on_btn_cura_pressed() -> void:
 		print("¡La salud ya está al máximo, no desperdicies curas!")
 	else:
 		print("¡El inventario de curas está vacío!")
+
+
+func _on_sub_viewport_container_gui_input(event: InputEvent) -> void:
+	#Detectar si se presiona o se suelta el clic izquierdp
+	if event is InputEventMouseButton and is_rotating_model:
+		is_rotating_model = event.pressed
+	#Rotar la capsula al arrastrar
+	if event is InputEventMouseMotion and is_rotating_model:
+		capsule_model.rotate_y(-event.relative.x * model_rotation_speed)
+		capsule_model.rotation.x -= event.relative.y * model_rotation_speed
+		# Limitamos el giro vertical para que la capsula no de vueltas
+		capsule_model.rotation.x = clamp(capsule_model.rotation.x, deg_to_rad(-25), deg_to_rad(25))
+		
+# --- VARIABLES PARA GUARDAR QUÉ ARMA HAY EN CADA SLOT ---
+var arma_en_slot_1 = "fuego" # Por defecto, la pistola
+var arma_en_slot_2 = "melee" # Por defecto, la espada
+
+# --- FUNCIÓN QUE RECIBE LA SEÑAL DESDE LA UI ---
+func _on_arma_asignada(numero_slot: int, tipo_arma: String):
+	if numero_slot == 1:
+		arma_en_slot_1 = tipo_arma
+	elif numero_slot == 2:
+		arma_en_slot_2 = tipo_arma
+		
+	print("El inventario actualizó el Slot ", numero_slot, " con: ", tipo_arma)
+
+func _on_objeto_consumido(tipo_objeto: String) -> void:
+	if tipo_objeto == "cura":
+		#Validamos que hayan curas disponibles
+		if objetos_curativos > 0 and current_health < max_health:
+			objetos_curativos -= 1
+			current_health += 40.0
+			current_health = clamp(current_health, 0.0, max_health)
+			
+			#Actualizamos las barras de la interfaz
+			health_bar.value = current_health
+			inventario_label.text = "INVENTARIO - Memorias: " + str(memorias_recuperadas) + " | Curas: " + str(objetos_curativos)
+			print("Bianca uso cura rapida desde la mochila - Salud actual: ", current_health)
+			
+		elif current_health >= max_health:
+			print("Salud al maximo, bianca guardo cura")
+			
+		else:
+			print("mochila vacia sin objetos curativos")
