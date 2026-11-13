@@ -44,7 +44,7 @@ func _atacar_jugador():
 		puede_atacar = false
 		attack_cooldown.start()
 
-func recibir_dano(cantidad: int):
+func get_damage(cantidad: int):
 	salud -= cantidad
 	print("¡Mutante recibió ", cantidad, " de daño! Salud restante: ", salud)
 	if salud <= 0:
