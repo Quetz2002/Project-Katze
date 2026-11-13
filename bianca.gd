@@ -156,46 +156,47 @@ func _physics_process(delta: float) -> void:
 			current_weapon = Weapon.RANGED
 			print("Arma equipada: Fuego a Distancia 🔫")
 
-	# --- LÓGICA DE ARMA A DISTANCIA ---
-	if current_weapon == Weapon.RANGED:
+	# --- LÓGICA DE ARMAS ---
+	# Con el inventario abierto no se puede atacar ni disparar.
+	if inventario_abierto:
+		is_aiming = false
+		reticle.hide()
+	elif current_weapon == Weapon.RANGED:
 		# Detectar apuntado
-		if not inventario_abierto:
-			if Input.is_action_pressed("aim"):
-				is_aiming = true
-				reticle.show()
-				SPEED = WALK_SPEED * 0.6 # Camina más lento al apuntar
-			else:
-				is_aiming = false
-				reticle.hide()
-				
-			# Disparar
-			if Input.is_action_just_pressed("shoot") and is_aiming:
-				if raycast.is_colliding():
-					var objetivo = raycast.get_collider()
-					print("¡Pum! Le diste a: ", objetivo.name)
-					
-					#Verificamos si le dio al enemigo
-					if objetivo.has_method("get_damage"):
-						objetivo.get_damage(25) #el disparo bajara 25 de vida
-				else:
-					print("¡Pum! Disparo al aire...")
-
-		# --- LÓGICA DE ARMA CUERPO A CUERPO ---
-		elif current_weapon == Weapon.MELEE:
-			is_aiming = false # Evita que la cámara haga zoom
-			reticle.hide()    # Oculta la mira por seguridad
+		if Input.is_action_pressed("aim"):
+			is_aiming = true
+			reticle.show()
+			SPEED = WALK_SPEED * 0.6 # Camina más lento al apuntar
+		else:
+			is_aiming = false
+			reticle.hide()
 			
-			# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
-			if Input.is_action_just_pressed("shoot"):
-				_ejecutar_golpe_melee("GOLPE LIGERO")
+		# Disparar
+		if Input.is_action_just_pressed("shoot") and is_aiming:
+			if raycast.is_colliding():
+				var objetivo = raycast.get_collider()
+				print("¡Pum! Le diste a: ", objetivo.name)
 				
-			# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
-			if Input.is_action_just_pressed("aim"):
-				if current_stamina >= heavy_attack_cost:
-					current_stamina -= heavy_attack_cost
-					_ejecutar_golpe_melee("GOLPE PESADO")
-				else:
-					print("No hay suficiente estamina")
+				#Verificamos si le dio al enemigo
+				if objetivo.has_method("get_damage"):
+					objetivo.get_damage(25) #el disparo bajara 25 de vida
+			else:
+				print("¡Pum! Disparo al aire...")
+	elif current_weapon == Weapon.MELEE:
+		is_aiming = false # Evita que la cámara haga zoom
+		reticle.hide()    # Oculta la mira por seguridad
+		
+		# GOLPE LIGERO: Reutilizamos el botón de Disparar (Clic Izquierdo / RT)
+		if Input.is_action_just_pressed("shoot"):
+			_ejecutar_golpe_melee("GOLPE LIGERO")
+			
+		# GOLPE PESADO: Reutilizamos el botón de Apuntar (Clic Derecho / LT)
+		if Input.is_action_just_pressed("aim"):
+			if current_stamina >= heavy_attack_cost:
+				current_stamina -= heavy_attack_cost
+				_ejecutar_golpe_melee("GOLPE PESADO")
+			else:
+				print("No hay suficiente estamina")
 
 	# Movimiento suave de la cámara (Zoom y Desplazamiento lateral)
 	var target_cam_length = AIM_CAM_LENGTH if is_aiming else NORMAL_CAM_LENGTH
