@@ -176,6 +176,7 @@ IdObjeto = "cura"
 [node name="SlotPistola" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1199739737]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
+focus_mode = 2
 color = Color(1, 0, 0, 1)
 script = ExtResource("2_510ro")
 
