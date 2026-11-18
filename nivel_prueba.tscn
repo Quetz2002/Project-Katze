@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://chmpbew8ctums" path="res://bianca.tscn" id="1_wamir"]
 [ext_resource type="PackedScene" uid="uid://djepru13dkw86" path="res://mutante.tscn" id="2_dyfjs"]
+[ext_resource type="PackedScene" uid="uid://bukbbojx0jeu3" path="res://botiquin.tscn" id="3_jqo2b"]
 
 [sub_resource type="Environment" id="Environment_u11fl"]
 background_mode = 2
@@ -24,3 +25,6 @@ environment = SubResource("Environment_u11fl")
 
 [node name="Mutante" parent="." unique_id=793058878 instance=ExtResource("2_dyfjs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 3)
+
+[node name="Botiquin" parent="." unique_id=784996177 instance=ExtResource("3_jqo2b")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, 7)

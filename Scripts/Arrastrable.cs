@@ -9,6 +9,25 @@ public partial class Arrastrable : ColorRect
     [Export]
     public string IdObjeto { get; set; } = "fuego"; // Etiqueta para saber si es fuego, melee o cura
 
+    public override void _Ready()
+    {
+        //Conectamos las señales nativas de foco de Godot
+        FocusEntered += OnFocusEntered;
+        FocusExited += OnFocusExited;
+    }
+
+    private void OnFocusEntered()
+    {
+        //Aumentamos el brillo al 150% cuando el mando selecciona la casilla
+        Modulate = new Color(1.5f, 1.5f, 1.5f);
+    }
+
+    private void OnFocusExited()
+    {
+
+        //Regresa al color original al mover el D-Pad o joystick
+        Modulate = new Color(1.0f, 1.0f, 1.0f);
+    }
     // 1. Se ejecuta automáticamente al mantener el clic y arrastrar
     public override Variant _GetDragData(Vector2 atPosition)
     {
@@ -45,6 +64,11 @@ public partial class Arrastrable : ColorRect
             {
                 TryConsume();
             }
+        }
+        //logica del Gamepad
+        if (@event.IsActionPressed("ui_accept"))
+        {
+            TryConsume();
         }
     }
 

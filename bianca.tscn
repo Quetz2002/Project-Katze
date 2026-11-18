@@ -130,12 +130,14 @@ theme_override_constants/separation = 15
 [node name="QuickSlot1" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots" unique_id=562465554]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
+focus_mode = 2
 color = Color(1, 1, 1, 0.35686275)
 script = ExtResource("2_ehs2g")
 
 [node name="QuickSlot2" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots" unique_id=916275102]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
+focus_mode = 2
 color = Color(1, 1, 1, 0.4745098)
 script = ExtResource("2_ehs2g")
 NumeroSlot = 2
@@ -166,6 +168,7 @@ columns = 4
 [node name="SlotCura" type="ColorRect" parent="UI/InventoryPanel/HBoxContainer/GridContainer" unique_id=1982708782]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
+focus_mode = 2
 color = Color(0, 1, 0, 1)
 script = ExtResource("2_510ro")
 IdObjeto = "cura"

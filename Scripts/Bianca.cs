@@ -453,4 +453,12 @@ public partial class Bianca : CharacterBody3D
 			}
 		}
 	}
+
+	public void RecogerCura()
+	{
+		_objetosCurativos += 1;
+		//Actualizamos el texto de la interfaz al instante
+		_inventarioLabel.Text = "INVENTARIO - Memorias: " + _memoriasRecuperadas + " | Curas: " + _objetosCurativos;
+		GD.Print("¡Botiquin recogido! Curas totales: ", _objetosCurativos);
+	}
 }
