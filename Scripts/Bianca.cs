@@ -181,7 +181,7 @@ public partial class Bianca : CharacterBody3D
 			_speed = WalkSpeed;
 		}
 
-		if (Input.IsActionJustPressed("ui_accept") && IsOnFloor() && _dashTimer <= 0 && _currentStamina >= _dashCost)
+		if (!_inventarioAbierto && Input.IsActionJustPressed("ui_accept") && IsOnFloor() && _dashTimer <= 0 && _currentStamina >= _dashCost)
 		{
 			_dashTimer = 0.25f; // El impulso dura un cuarto de segundo
 			_currentStamina -= _dashCost;
