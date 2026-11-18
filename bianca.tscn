@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://chmpbew8ctums"]
 
-[ext_resource type="Script" path="res://bianca.cs" id="1_d8rcv"]
-[ext_resource type="Script" path="res://arrastrable.cs" id="2_510ro"]
-[ext_resource type="Script" path="res://ranura_destino.cs" id="2_ehs2g"]
+[ext_resource type="Script" path="res://Bianca.cs" id="1_d8rcv"]
+[ext_resource type="Script" path="res://Arrastrable.cs" id="2_510ro"]
+[ext_resource type="Script" path="res://RanuraDestino.cs" id="2_ehs2g"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wamir"]
 diffuse_mode = 3
