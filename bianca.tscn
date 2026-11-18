@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://chmpbew8ctums"]
 
-[ext_resource type="Script" path="res://Bianca.cs" id="1_d8rcv"]
-[ext_resource type="Script" path="res://Arrastrable.cs" id="2_510ro"]
-[ext_resource type="Script" path="res://RanuraDestino.cs" id="2_ehs2g"]
+[ext_resource type="Script" uid="uid://cbrgjxlgcjt8k" path="res://Scripts/Bianca.cs" id="1_d8rcv"]
+[ext_resource type="Script" uid="uid://18ufvgjf3b2n" path="res://Scripts/Arrastrable.cs" id="2_510ro"]
+[ext_resource type="Script" uid="uid://bqv4t60hx1owh" path="res://Scripts/RanuraDestino.cs" id="2_ehs2g"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wamir"]
 diffuse_mode = 3
@@ -138,6 +138,7 @@ custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 color = Color(1, 1, 1, 0.4745098)
 script = ExtResource("2_ehs2g")
+NumeroSlot = 2
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="UI/InventoryPanel/HBoxContainer" unique_id=278369314]
 layout_mode = 2
