@@ -6,6 +6,9 @@ public partial class Arrastrable : ColorRect
     [Signal]
     public delegate void ObjetoConsumidoEventHandler(string idObjeto);
 
+    [Signal]
+    public delegate void ArmaSeleccionadaEventHandler(string idObjeto, Color colorOrigen);
+
     [Export]
     public string IdObjeto { get; set; } = "fuego"; // Etiqueta para saber si es fuego, melee o cura
 
@@ -68,7 +71,15 @@ public partial class Arrastrable : ColorRect
         //logica del Gamepad
         if (@event.IsActionPressed("ui_accept"))
         {
-            TryConsume();
+            if (IdObjeto == "cura")
+            {
+                TryConsume();
+            }
+            else if (IdObjeto == "fuego" || IdObjeto == "melee")
+            {
+                EmitSignal(SignalName.ArmaSeleccionada, IdObjeto, Color);
+                AcceptEvent();
+            }
         }
     }
 

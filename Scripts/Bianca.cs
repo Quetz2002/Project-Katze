@@ -19,6 +19,13 @@ public partial class Bianca : CharacterBody3D
 	private int _memoriasRecuperadas = 0;
 	private int _objetosCurativos = 3;
 
+	private RanuraDestino _slot1;
+	private RanuraDestino _slot2;
+	private Control _primerSlotMochila;
+	private string _armaPendienteId = "";
+	private Color _armaPendienteColor;
+
+
 	// --- INVENTARIO V3: ROTACION DEL MODELO 3D ---
 	private bool _isRotatingModel = false;
 	private float _modelRotationSpeed = 0.01f;
@@ -44,9 +51,12 @@ public partial class Bianca : CharacterBody3D
 	private const float AimHOffset = 1.0f;    // Cuánto se mueve a la derecha al apuntar
 	private bool _isAiming = false;
 	private float _mouseSensitivity = 0.003f;
+	private float _joySensitivity = 2.5f; //Velocidad de giro con el mando
 
 	// --- MOVIMIENTO ---
 	private const float JumpVelocity = 4.5f;
+	private int _saltosRestantes = 2;
+	private const int MaxSaltos = 2;
 	private float _speed = 5.0f;
 	private const float WalkSpeed = 5.0f;
 	private const float DashSpeed = 15.0f;
@@ -77,19 +87,26 @@ public partial class Bianca : CharacterBody3D
 		Input.MouseMode = Input.MouseModeEnum.Captured;
 		_reticle.Hide();
 
-		// --- CONECTAR SEÑALES DEL INVENTARIO ---
-		var slot1 = GetNode<RanuraDestino>("UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot1");
-		var slot2 = GetNode<RanuraDestino>("UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot2");
+        // --- CONECTAR SEÑALES DEL INVENTARIO ---
+        _slot1 = GetNode<RanuraDestino>("UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot1");
+        _slot2 = GetNode<RanuraDestino>("UI/InventoryPanel/HBoxContainer/VBoxContainer/QuickSlots/QuickSlot2");
 
-		// Conectamos la señal 'arma_asignada' a la función 'OnArmaAsignada'
-		slot1.ArmaAsignada += OnArmaAsignada;
-		slot2.ArmaAsignada += OnArmaAsignada;
+        _slot1.ArmaAsignada += OnArmaAsignada;
+        _slot2.ArmaAsignada += OnArmaAsignada;
+        _slot1.SlotConfirmadoConMando += OnSlotConfirmadoConMando;
+        _slot2.SlotConfirmadoConMando += OnSlotConfirmadoConMando;
 
-		// Conectamos las señales de la mochila
-		// La ruta debe apuntar correctamente al cuadro de la mochila (el verde)
-		var slotCura = GetNode<Arrastrable>("UI/InventoryPanel/HBoxContainer/GridContainer/SlotCura");
-		slotCura.ObjetoConsumido += OnObjetoConsumido;
-	}
+        var gridMochila = GetNode<GridContainer>("UI/InventoryPanel/HBoxContainer/GridContainer");
+        foreach (Node hijo in gridMochila.GetChildren())
+        {
+            if (hijo is Arrastrable item)
+            {
+                _primerSlotMochila ??= item;
+                item.ObjetoConsumido += OnObjetoConsumido;
+                item.ArmaSeleccionada += OnArmaSeleccionada;
+            }
+        }
+    }
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
@@ -152,11 +169,47 @@ public partial class Bianca : CharacterBody3D
 			}
 			// Nota: No usamos 'return' para que el movimiento de abajo se siga ejecutando
 		}
+		else
+		{
+			//Leemos el sitck derecho del mando
+			float joyX = Input.GetJoyAxis(0, JoyAxis.RightX);
+			float joyY = Input.GetJoyAxis(0, JoyAxis.RightY);
+			Vector2 lookInput = new Vector2(joyX, joyY);
+
+			//Zona muerta 0.2 para evitar drift si el stick esta desgastado
+			if (lookInput.Length() > 0.2f)
+			{
+				//Si apunta la sensibilidad tambien baja al 40%
+				float currentJoySens = _isAiming ? _joySensitivity * 0.4f : _joySensitivity;
+
+				//Multiplicamos por deltaF para que gire igual a 60 FPS
+				_camRoot.RotateY(-lookInput.X * currentJoySens * deltaF);
+
+				var rotation = _camRoot.Rotation;
+				rotation.X -= lookInput.Y * currentJoySens * deltaF;
+				rotation.X = Mathf.Clamp(rotation.X, Mathf.DegToRad(-70), Mathf.DegToRad(70));
+				_camRoot.Rotation = rotation;
+			}
+		}
 
 		// Gravedad
 		if (!IsOnFloor())
 		{
 			Velocity += GetGravity() * deltaF;
+		}
+
+		if (IsOnFloor())
+		{
+			_saltosRestantes = MaxSaltos;
+		}
+
+		//Doble Salto solo si el inventario esta cerrado
+		if (!_inventarioAbierto && Input.IsActionJustPressed("Jump") && _saltosRestantes > 0)
+		{
+			var velocity = Velocity;
+			velocity.Y = JumpVelocity;
+			Velocity = velocity;
+			_saltosRestantes--;
 		}
 
 		// Regenerar stamina
@@ -181,7 +234,7 @@ public partial class Bianca : CharacterBody3D
 			_speed = WalkSpeed;
 		}
 
-		if (!_inventarioAbierto && Input.IsActionJustPressed("ui_accept") && IsOnFloor() && _dashTimer <= 0 && _currentStamina >= _dashCost)
+		if (!_inventarioAbierto && Input.IsActionJustPressed("sprint") && IsOnFloor() && _dashTimer <= 0 && _currentStamina >= _dashCost)
 		{
 			_dashTimer = 0.25f; // El impulso dura un cuarto de segundo
 			_currentStamina -= _dashCost;
@@ -336,6 +389,13 @@ public partial class Bianca : CharacterBody3D
 
 	public void RecibirDano(float cantidad)
 	{
+
+		//i-frames porque sino no es un souls
+		if (_dashTimer > 0)
+		{
+			GD.Print("Esquivaste como gato maullame (i-frames activos)");
+			return;
+		}
 		_currentHealth -= cantidad;
 		_currentHealth = Mathf.Clamp(_currentHealth, 0, _maxHealth);
 		_healthBar.Value = _currentHealth;
@@ -344,23 +404,29 @@ public partial class Bianca : CharacterBody3D
 		if (_currentHealth <= 0)
 		{
 			GD.Print("¡Bianca ha caído!");
+			Morir();
 		}
 	}
 
 	private void ManejarInventario()
 	{
+
 		_inventarioAbierto = !_inventarioAbierto;
+		_armaPendienteId = "";
+
 		if (_inventarioAbierto)
 		{
 			_inventoryPanel.Show();
 			Input.MouseMode = Input.MouseModeEnum.Visible; // Se libera el cursor
 			// GetTree().Paused = true; // Se pausa todo el juego
 			_inventarioLabel.Text = "INVENTARIO - Memorias: " + _memoriasRecuperadas + " | Curas: " + _objetosCurativos;
+			_primerSlotMochila?.GrabFocus();
 		}
 		else
 		{
 			_inventoryPanel.Hide();
 			Input.MouseMode = Input.MouseModeEnum.Captured; // Se captura el mouse nuevamente
+			GetViewport().GuiReleaseFocus();
 			// GetTree().Paused = false; // Se reanuda el juego
 		}
 	}
@@ -461,4 +527,24 @@ public partial class Bianca : CharacterBody3D
 		_inventarioLabel.Text = "INVENTARIO - Memorias: " + _memoriasRecuperadas + " | Curas: " + _objetosCurativos;
 		GD.Print("¡Botiquin recogido! Curas totales: ", _objetosCurativos);
 	}
+
+	private void OnArmaSeleccionada(string idObjeto, Color colorOrigen)
+	{
+		_armaPendienteId = idObjeto;
+		_armaPendienteColor = colorOrigen;
+		GD.Print("Arma seleccionada con mando: ", idObjeto, ". Elige un quick slot y presiona A");
+		_slot1.GrabFocus();
+
+	}
+
+	private void OnSlotConfirmadoConMando(RanuraDestino ranura)
+	{
+		if (string.IsNullOrEmpty(_armaPendienteId)) return;
+
+		ranura.AsignarArma(_armaPendienteId, _armaPendienteColor);
+		_armaPendienteId = "";
+		_primerSlotMochila?.GrabFocus();
+	}
+
+
 }
